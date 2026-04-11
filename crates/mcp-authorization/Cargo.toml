@@ -2,9 +2,15 @@
 name = "mcp-authorization"
 version = "0.1.0"
 edition = "2021"
+description = "Type-state authorization for MCP tool servers — compile-time proof that auth checks cannot be skipped"
+license = "MIT"
+repository = "https://github.com/onboardiq/mcp_authorization_rust"
+readme = "../../README.md"
+keywords = ["mcp", "authorization", "schema", "type-state"]
+categories = ["authentication", "web-programming"]
 
 [dependencies]
-mcp-authorization-macros = { path = "../mcp-authorization-macros" }
+mcp-authorization-macros = { version = "0.1.0", path = "../mcp-authorization-macros" }
 rmcp = { version = "1.4", features = ["server"] }
 schemars = "1"
 serde = { version = "1", features = ["derive"] }

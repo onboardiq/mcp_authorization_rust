@@ -2,6 +2,11 @@
 name = "mcp-authorization-macros"
 version = "0.1.0"
 edition = "2021"
+description = "Proc macros for mcp-authorization: #[derive(AuthSchema)] and #[requires] attributes"
+license = "MIT"
+repository = "https://github.com/onboardiq/mcp_authorization_rust"
+keywords = ["mcp", "authorization", "schema", "macros"]
+categories = ["development-tools::procedural-macro-helpers"]
 
 [lib]
 proc-macro = true
