@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mcp-authorization",
+    "crates/mcp-authorization-macros",
+    "examples/workflow-server",
+]
