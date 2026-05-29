@@ -93,6 +93,15 @@ impl AuthContext {
         }
     }
 
+    /// An `AuthContext` with no capabilities — the deny-by-default identity.
+    ///
+    /// A request resolved to an empty context sees only ungated tools, never
+    /// any tool guarded by [`authorize`](crate::AuthorizedServer::authorize) or
+    /// any `#[requires(...)]` field/variant.
+    pub fn empty() -> Self {
+        Self::new(Vec::<String>::new())
+    }
+
     /// Try to obtain a `Proof<C>`. Returns `Some(Proof)` if the user has
     /// the capability, `None` otherwise.
     ///

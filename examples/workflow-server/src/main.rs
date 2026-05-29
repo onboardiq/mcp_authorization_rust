@@ -151,17 +151,24 @@ impl ServerHandler for WorkflowServer {
 async fn main() {
     // The AuthorizedServer wraps the inner handler and intercepts
     // list_tools to shape schemas per-user.
+    //
+    // `.deny_by_default()` chooses the auth source: use an AuthContext injected
+    // by middleware if present, else an empty (least-privilege) context. It's
+    // also what makes this a `ServerHandler` — without choosing an auth source,
+    // `.serve(..)` below would not compile. Over stdio there's no middleware, so
+    // an unauthenticated client sees only ungated tools (here: none) rather than
+    // an error. In production you'd use StreamableHTTP with auth middleware that
+    // inserts an AuthContext from JWT headers; `.deny_by_default()` picks it up,
+    // or use `.with_auth(provider)` for a custom source.
     let server = AuthorizedServer::new(WorkflowServer)
         .register::<AdvanceStepInput, AdvanceStepOutput>(
             "advance_step",
             "Advance an applicant in their workflow",
         )
-        .authorize("advance_step", "manage_workflows");
+        .authorize("advance_step", "manage_workflows")
+        .deny_by_default();
 
-    // For this demo, we use stdio transport.
-    // In production, you'd use StreamableHTTP with auth middleware
-    // that extracts AuthContext from JWT headers.
-    eprintln!("Workflow MCP server starting on stdio...");
+    eprintln!("Workflow MCP server starting on stdio (deny-by-default auth)...");
     eprintln!("Tools registered with type-state authorization.");
     eprintln!(
         "  - advance_step: requires '{}' (tool-level)",

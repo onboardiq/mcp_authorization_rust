@@ -1,6 +1,6 @@
 [package]
 name = "mcp-authorization"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Type-state authorization for MCP tool servers — compile-time proof that auth checks cannot be skipped"
 license = "MIT"

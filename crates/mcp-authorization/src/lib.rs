@@ -46,6 +46,7 @@
 
 pub mod capability;
 pub mod metadata;
+pub mod provider;
 pub mod registry;
 pub mod schema;
 pub mod server;
@@ -53,9 +54,10 @@ pub mod server;
 // Re-exports for convenience
 pub use capability::{AuthContext, Capability, Proof};
 pub use metadata::AuthSchemaMetadata;
+pub use provider::{AuthProvider, DenyByDefault};
 pub use registry::{AuthToolDef, AuthToolRegistry};
 pub use schema::SchemaShaper;
-pub use server::AuthorizedServer;
+pub use server::{Authorized, AuthorizedServer, NoAuth, ReadyToServe};
 
 // Re-export the derive macro
 pub use mcp_authorization_macros::AuthSchema;

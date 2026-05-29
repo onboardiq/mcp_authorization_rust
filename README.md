@@ -104,7 +104,7 @@ if let Some(proof) = auth.check::<BackwardRouting>() {
 // server.reroute(???, &input)  // error[E0061]: missing argument of type Proof<BackwardRouting>
 ```
 
-Wire it up with `AuthorizedServer`:
+Wire it up with `AuthorizedServer`, then choose an auth source:
 
 ```rust
 let server = AuthorizedServer::new(WorkflowServer)
@@ -112,7 +112,10 @@ let server = AuthorizedServer::new(WorkflowServer)
         "advance_step",
         "Advance an applicant in their workflow",
     )
-    .authorize("advance_step", "manage_workflows");
+    .authorize("advance_step", "manage_workflows")
+    // Choose where each request's AuthContext comes from. This is also what
+    // makes the server a `ServerHandler` — see "Serving" below.
+    .deny_by_default();
 ```
 
 **Operator** calls `tools/list` and sees:
@@ -182,7 +185,7 @@ auth.has("admin")              // -> bool (for runtime schema shaping)
 
 Generates `AuthSchemaMetadata` from `#[requires("capability")]` annotations on struct fields or enum variants. Works alongside `#[derive(JsonSchema)]` — does not modify the type.
 
-### `AuthorizedServer<S>`
+### `AuthorizedServer<S, A>`
 
 Wraps any rmcp `ServerHandler`. Intercepts `list_tools` to shape schemas per-user and `call_tool` to enforce tool-level gates. Delegates everything else to the inner handler.
 
@@ -190,7 +193,27 @@ Wraps any rmcp `ServerHandler`. Intercepts `list_tools` to shape schemas per-use
 AuthorizedServer::new(inner_handler)
     .register::<InputType, OutputType>("tool_name", "description")
     .authorize("tool_name", "required_capability")
+    .deny_by_default()  // or .with_auth(provider)
 ```
+
+### Serving — auth is a compile-time requirement
+
+`AuthorizedServer` is a type-state builder. `AuthorizedServer::new(..)` starts in the `NoAuth` state and **deliberately does not implement `ServerHandler`**, so you cannot serve it over any transport until you choose how requests get an `AuthContext`. In the same spirit as `Proof<C>`, forgetting auth is a *build error*, not a runtime panic:
+
+```rust
+// Does NOT compile — NoAuth is not a ServerHandler:
+// AuthorizedServer::new(handler).serve(transport)
+
+AuthorizedServer::new(handler).deny_by_default().serve(transport)        // ✅
+AuthorizedServer::new(handler).with_auth(my_provider).serve(transport)   // ✅
+```
+
+Two ways to choose an auth source (the `AuthProvider` trait):
+
+- **`.deny_by_default()`** installs `DenyByDefault`: use an `AuthContext` injected into `RequestContext::extensions` by middleware if present, otherwise resolve to `AuthContext::empty()` (no capabilities). An unauthenticated client therefore sees only ungated tools — the least-privileged view — instead of an error. Ideal for stdio / local / dev, and it transparently picks up a middleware-injected context in production.
+- **`.with_auth(provider)`** takes any `AuthProvider`, including a closure `Fn(&RequestContext<RoleServer>) -> AuthContext` — wire it to JWT claims, a DB lookup, or a fixed dev identity.
+
+Where the context comes from is a *runtime* concern (the same binary may serve stdio in dev and HTTP in prod), so it's a provider/closure seam rather than a cargo feature — the core crate stays transport- and framework-free.
 
 ### `SchemaShaper`
 
