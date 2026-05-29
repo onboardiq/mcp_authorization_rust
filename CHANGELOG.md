@@ -36,6 +36,8 @@ longer errors — it denies by default.
   trait (with a `#[diagnostic::on_unimplemented]` hint) for use as a bound.
 - Doc-tests asserting the compile-time gate: serving without an auth source
   fails to compile; `deny_by_default()` makes it a `ServerHandler`.
+- Declared `rust-version = "1.78"` (MSRV) — required by the
+  `#[diagnostic::on_unimplemented]` hint on `ReadyToServe`.
 
 ### Notes
 
